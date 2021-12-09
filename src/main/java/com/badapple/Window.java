@@ -13,6 +13,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.locks.LockSupport;
 
 public class Window extends JFrame implements Runnable {
@@ -88,11 +89,11 @@ public class Window extends JFrame implements Runnable {
 
         new Thread(() -> {
             PlayAudio play = new PlayAudio();
-            play.start();;
+            play.start();
 
-            for (int i = 0; i < video.LENGTH || closed; i++) {
+            for (int i = 0; i < BadAppleVideo.LENGTH || closed; i++) {
                 long time1 = System.nanoTime();
-                canvas.renderFrame(video.getFrame(i));
+                canvas.renderFrame(video.getFrame(i), i);
                 long time2 = System.nanoTime();
                 LockSupport.parkNanos(1000000000 / 30 - (time2 - time1)); // fps (duration of frame in nanosec - time taken to render frame)
             }

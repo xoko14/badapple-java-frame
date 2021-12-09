@@ -16,14 +16,14 @@ public class BadAppleVideo extends Video{
     public static final int WIDTH = 96;
     public static final int HEIGHT = 64;
     private static final int BPF = WIDTH*HEIGHT;
-    public int LENGTH = 6000;
+    public static int LENGTH = 6000;
 
     private RandomAccessFile videoFile = null;
 
     public BadAppleVideo(){
         try {
             videoFile = new RandomAccessFile(Objects.requireNonNull(getClass().getResource("/frames.bin")).getFile(), "r");
-            LENGTH = (int) new File(Objects.requireNonNull(getClass().getResource("/frames.bin")).getFile()).length();
+            BadAppleVideo.LENGTH = (int) new File(Objects.requireNonNull(getClass().getResource("/frames.bin")).getFile()).length()/BPF;
         } catch (IOException e) {
             e.printStackTrace();
         }

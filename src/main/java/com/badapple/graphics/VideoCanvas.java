@@ -20,7 +20,7 @@ public class VideoCanvas extends Canvas{
         this.setIgnoreRepaint(true);
     }
 
-    public void renderFrame(byte[] frame){
+    public void renderFrame(byte[] frame, int currentFrame){
         Graphics graphics = bufferStrategy.getDrawGraphics();
 
         double rendererAspect = (double) BadAppleVideo.WIDTH / (double) BadAppleVideo.HEIGHT,
@@ -49,17 +49,17 @@ public class VideoCanvas extends Canvas{
         }
         //graphics.setColor(Color.BLUE); graphics.fillRect(0,0,WIDTH*scaleFactor, HEIGHT*scaleFactor);
 
-        // // draw frame number
-        // graphics.setColor(Color.green);
-        // Font font = new Font("Sans Serif", Font.BOLD, 12);
-        // graphics.setFont(font);
-        // FontMetrics fontMetrics = graphics.getFontMetrics();
-        // graphics.drawString(String.format("frame %d/%d", frame, totalFrames), 2, fontMetrics.getAscent());
+        // draw frame number
+        graphics.setColor(Color.green);
+        Font font = new Font("Sans Serif", Font.BOLD, 12);
+        graphics.setFont(font);
+        FontMetrics fontMetrics = graphics.getFontMetrics();
+        graphics.drawString(String.format("frame %d/%d", currentFrame, BadAppleVideo.LENGTH), 2, fontMetrics.getAscent());
 
-        // // draw progressbar
-        // graphics.setColor(Color.RED);
-        // double barSize =  (double) frame/(double) totalFrames * getWidth();
-        // graphics.fillRect(0,getHeight()-4, (int) barSize, 4);
+        // draw progressbar
+        graphics.setColor(Color.RED);
+        double barSize =  (double) currentFrame/(double) BadAppleVideo.LENGTH * getWidth();
+        graphics.fillRect(0,getHeight()-4, (int) barSize, 4);
 
         graphics.dispose();
 
