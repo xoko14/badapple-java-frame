@@ -9,7 +9,8 @@ import java.io.InputStream;
 public class GZipBytes {
     private byte[] bytes;
 
-    public GZipBytes(InputStream file) {
+    public static byte[] getBytes(InputStream file){
+        byte[] bytes = null;
         try {
             GZIPInputStream gzipper = new GZIPInputStream(file);
 
@@ -29,13 +30,6 @@ public class GZipBytes {
             e.printStackTrace();
             System.exit(1);
         }
-    }
-
-    public byte getByte(int byteNum){
-        return bytes[byteNum];
-    }
-
-    public int getLength(){
-        return bytes.length;
+        return bytes;
     }
 }

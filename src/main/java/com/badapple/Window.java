@@ -1,7 +1,10 @@
 package com.badapple;
 
 import com.badapple.audio.PlayAudio;
+import com.badapple.graphics.VideoCanvas;
 import com.badapple.utils.GZipBytes;
+import com.badapple.video.BadAppleVideo;
+import com.badapple.video.Video;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,17 +20,16 @@ public class Window extends JFrame implements Runnable {
     private static final int WIDTH = 96;
     private static final int HEIGHT = 64;
 
-    private static final int WINDOW_WIDTH = WIDTH * 2;
-    private static final int WINDOW_HEIGHT = HEIGHT * 2;
+    public static final int WINDOW_WIDTH = WIDTH * 2;
+    public static final int WINDOW_HEIGHT = HEIGHT * 2;
 
-    private final Canvas canvas;
-    private final BufferStrategy bufferStrategy;
+    private final VideoCanvas canvas;
 
-    private final GZipBytes video;
+    private final BadAppleVideo video;
     private boolean closed = false;
 
     public Window(){
-        video = new GZipBytes(Window.class.getResourceAsStream("/frames.bin.gz"));
+        video = new BadAppleVideo();
         this.setTitle("Bad Apple");
         this.getContentPane().setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -53,10 +55,7 @@ public class Window extends JFrame implements Runnable {
         });
         this.setFocusable(true);
 
-        canvas = new Canvas();
-        canvas.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-        canvas.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        canvas.setIgnoreRepaint(true);
+        canvas = new VideoCanvas(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.add(canvas);
         this.pack();
         this.setLocationRelativeTo(null);
@@ -79,7 +78,7 @@ public class Window extends JFrame implements Runnable {
         });
 
         canvas.createBufferStrategy(2);
-        bufferStrategy = canvas.getBufferStrategy();
+        canvas.setBufferStrategy(canvas.getBufferStrategy());
     }
 
     @Override
@@ -89,70 +88,15 @@ public class Window extends JFrame implements Runnable {
 
         new Thread(() -> {
             PlayAudio play = new PlayAudio();
-            play.start();
+            play.start();;
 
-            int totalFrames = video.getLength() / (WIDTH * HEIGHT);
-
-            for (int i = 0; i < totalFrames || closed; i++) {
+            for (int i = 0; i < video.LENGTH || closed; i++) {
                 long time1 = System.nanoTime();
-                renderFrame(i, totalFrames);
+                canvas.renderFrame(video.getFrame(i));
                 long time2 = System.nanoTime();
                 LockSupport.parkNanos(1000000000 / 30 - (time2 - time1)); // fps (duration of frame in nanosec - time taken to render frame)
             }
         }).start();
         System.out.println("I reached here");
-    }
-
-    private void renderFrame(int frame, int totalFrames){
-        Graphics graphics = bufferStrategy.getDrawGraphics();
-
-        double rendererAspect = (double) WIDTH / (double) HEIGHT,
-                windowAspect = (double)canvas.getWidth() / (double) canvas.getHeight();
-        int scaleFactor = windowAspect > rendererAspect ?
-                canvas.getHeight() / HEIGHT :
-                canvas.getWidth() / WIDTH;
-
-        int rw = (WIDTH * scaleFactor), rh = (HEIGHT * scaleFactor);
-
-        int startbyte = frame * WIDTH * HEIGHT;
-
-        // clear buffer
-        graphics.setColor(Color.GRAY);
-        graphics.fillRect(0,0, canvas.getWidth(), canvas.getHeight());
-
-        // draw frame
-        int y = (canvas.getHeight()-rh)/2;
-        for (int i = 0; i < HEIGHT * WIDTH; i += WIDTH) {
-            int x = (canvas.getWidth()-rw)/2;
-            for (int j = startbyte + i; j < startbyte + WIDTH + i; j++) {
-                if (video.getByte(j) == 0) graphics.setColor(Color.BLACK);
-                else graphics.setColor(Color.WHITE);
-
-                graphics.fillRect(x, y, scaleFactor, scaleFactor);
-
-                x+=scaleFactor;
-            }
-            y+=scaleFactor;
-        }
-        //graphics.setColor(Color.BLUE); graphics.fillRect(0,0,WIDTH*scaleFactor, HEIGHT*scaleFactor);
-
-        // draw frame number
-        graphics.setColor(Color.green);
-        Font font = new Font("Sans Serif", Font.BOLD, 12);
-        graphics.setFont(font);
-        FontMetrics fontMetrics = graphics.getFontMetrics();
-        graphics.drawString(String.format("frame %d/%d", frame, totalFrames), 2, fontMetrics.getAscent());
-
-        // draw progressbar
-        graphics.setColor(Color.RED);
-        double barSize =  (double) frame/(double) totalFrames * canvas.getWidth();
-        graphics.fillRect(0,canvas.getHeight()-4, (int) barSize, 4);
-
-        graphics.dispose();
-
-        // show buffer on canvas
-        if (!bufferStrategy.contentsLost()) {
-            bufferStrategy.show();
-        }
     }
 }
