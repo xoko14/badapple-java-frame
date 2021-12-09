@@ -11,6 +11,8 @@ public class VideoCanvas extends Canvas{
     public void setBufferStrategy(BufferStrategy bf){
         this.bufferStrategy = bf;
     }
+
+    private BadAppleVideo video;
     
     public VideoCanvas(int width, int height){
         this.setPreferredSize(new Dimension(width, height));
